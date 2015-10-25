@@ -1,4 +1,4 @@
-function Get-HttpStatus
+function Find-Fruit
 {
 <#
 .SYNOPSIS
