@@ -9,13 +9,13 @@ function Invoke-SSHCommand {
     The string containing the IP or hostname of the target server.
     
 .Parameter Username
-    The username for the ftp server
+    The username for the ssh server
 
 .Parameter Password
-    The password for the ftp server
+    The password for the ssh server
 
 .Example
-    Import-Module Egress-Assess.ps1
+    Invoke-SSHCommand -ip 192.168.1.100 -Username root -Password test -Command "id"
 
 #>
     param(
