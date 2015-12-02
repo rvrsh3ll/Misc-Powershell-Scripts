@@ -44,7 +44,6 @@ function Invoke-SSHCommand {
     catch
     {
         Write-Verbose "[*] Error loading dll"
-        Break
     }
 
     try
@@ -59,7 +58,5 @@ function Invoke-SSHCommand {
     catch
     {
         Write-Verbose "[*] Connection failed"
-        Return
     }
 }
-
