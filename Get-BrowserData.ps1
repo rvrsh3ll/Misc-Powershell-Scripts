@@ -1,4 +1,4 @@
-function Get-BrowserInformation {
+function Get-BrowserData {
 <#
     .SYNOPSIS
 
