@@ -3,7 +3,7 @@ function Brute-365 {
     .SYNOPSIS
         Attempts to login to Office 365 accounts using the Azure PowerShell module
         Author: Steve Borosh (@424f424f)
-        Required Dependencies: Azure PowerShell module containing "Connect-Msolservice"
+        Required Dependencies: Azure PowerShell module containing "Connect-Msolservice". http://connect.microsoft.com/site1164/Downloads/DownloadDetails.aspx?DownloadID=59185
         Optional Dependencies: None
     .DESCRIPTION
         Using a csv with a header column of "Username", iterates through each user
