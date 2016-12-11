@@ -51,7 +51,7 @@ function Brute-365 {
         this module, there is no default account lockout. Beware of account lockout!
         Has optional parameter to beep when a login is successful.
     .EXAMPLE
-        Brute-365 -csv .\targets.csv -Password "Winter2016!" -Beep
+        Brute-OWA -csv .\targets.csv -Password "Winter2016!" -Beep
 #>
   # https://blogs.technet.microsoft.com/meamcs/2015/03/06/powershell-script-to-simulate-outlook-web-access-url-user-logon/
   Param(
