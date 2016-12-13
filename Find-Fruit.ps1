@@ -326,6 +326,7 @@ param (
                     try
                     {
                         $WebRequest = [System.Net.WebRequest]::Create($URI)
+                        $WebRequest.Headers.Add('UserAgent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko')
                         $WebResponse = $WebRequest.Timeout = $Timeout
                         $WebResponse = $WebRequest.GetResponse()
                         $WebStatus = $WebResponse.StatusCode
