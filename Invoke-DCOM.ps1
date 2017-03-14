@@ -1,5 +1,3 @@
-
-
 <#
 
     DCOM Lateral Movement
