@@ -39,8 +39,8 @@ function Invoke-DCOM {
     .EXAMPLE
 
         Import-Module .\Invoke-DCOM.ps1
-        Invoke-DCOM -Target '192.168.2.100' -Type MMC20 -Command "calc.exe"
-        Invoke-DCOM -Target '192.168.2.100' -Type ServiceStart "MyService"
+        Invoke-DCOM -ComputerName '192.168.2.100' -Method MMC20 -Command "calc.exe"
+        Invoke-DCOM -ComputerName '192.168.2.100' -Method ServiceStart "MyService"
 #>
 
     [CmdletBinding()]
