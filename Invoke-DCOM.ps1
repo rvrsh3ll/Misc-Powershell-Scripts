@@ -28,7 +28,7 @@ function Invoke-DCOM {
 
         IP Address or Hostname of the remote system
 
-    .PARAMETER Type
+    .PARAMETER Method
 
         Specifies the desired type of execution
 
