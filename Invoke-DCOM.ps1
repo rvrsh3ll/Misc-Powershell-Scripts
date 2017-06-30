@@ -24,7 +24,7 @@ function Invoke-DCOM {
 
         Invoke commands on remote hosts via MMC20.Application COM object over DCOM.
 
-    .PARAMETER Target
+    .PARAMETER ComputerName
 
         IP Address or Hostname of the remote system
 
