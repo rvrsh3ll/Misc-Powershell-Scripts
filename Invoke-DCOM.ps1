@@ -114,7 +114,7 @@ function Invoke-DCOM {
         #Begin main process block
 
         #Check for which type we are using and apply options accordingly
-        if ($Method -Match "MMC20") {
+        if ($Method -Match "MMC20.Application") {
 
             $Com = [Type]::GetTypeFromProgID("MMC20.Application","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
