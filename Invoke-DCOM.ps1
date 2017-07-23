@@ -50,7 +50,8 @@ function Invoke-DCOM {
         $ComputerName,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateSet("MMC20", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart")]
+        [ValidateSet("MMC20", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart",
+        "DetectOffice","RegisterXLL")]
         [String]
         $Method = "MMC20",
 
@@ -60,7 +61,12 @@ function Invoke-DCOM {
 
         [Parameter(Mandatory = $false, Position = 3)]
         [string]
-        $Command= "calc.exe"
+        $Command= "calc.exe",
+
+        [Parameter(Mandatory = $false, Position = 4)]
+        [string]
+        $DllPath,
+
     )
 
     Begin {
@@ -162,6 +168,19 @@ function Invoke-DCOM {
             $Com = [Type]::GetTypeFromCLSID("C08AFD90-F2A1-11D1-8455-00A0C91F3880","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Document.Application.ServiceStart("$ServiceName")
+        }
+        elseif ($Method -Match "DetectOffice") {
+
+            $Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+            $Obj = [System.Activator]::CreateInstance($Com)
+            $isx64 = [boolean]$obj.Application.ProductCode[21]
+            Write-Host  $(If ($isx64) {"Office x64 detected"} Else {"Office x86 detected"})
+        }
+        elseif ($Method -Match "RegisterXLL") {
+
+            $Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+            $Obj = [System.Activator]::CreateInstance($Com)
+            $obj.Application.RegisterXLL("$DllPath")
         }
     }
 
