@@ -50,10 +50,10 @@ function Invoke-DCOM {
         $ComputerName,
 
         [Parameter(Mandatory = $true, Position = 1)]
-        [ValidateSet("MMC20", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart",
+        [ValidateSet("MMC20.Application", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart",
         "DetectOffice","RegisterXLL")]
         [String]
-        $Method = "MMC20",
+        $Method = "MMC20.Application",
 
         [Parameter(Mandatory = $false, Position = 2)]
         [string]
