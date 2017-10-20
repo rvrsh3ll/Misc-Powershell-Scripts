@@ -65,7 +65,7 @@ function Invoke-DCOM {
 
         [Parameter(Mandatory = $false, Position = 4)]
         [string]
-        $DllPath,
+        $DllPath
 
     )
 
