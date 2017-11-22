@@ -11,7 +11,7 @@ function Backdoor-ExcelAddIn {
     <#
 
         .SYNOPSIS
-            Add a malicous addin for persistence.
+            Add a malicous addin for persistence. Based on https://labs.mwrinfosecurity.com/blog/add-in-opportunities-for-office-persistence/
         .DESCRIPTION
             Add a malicious addin for persisntence. Don't forget to add your split base64 encoded shellcode in the Init function
         .PARAMETER FileName
