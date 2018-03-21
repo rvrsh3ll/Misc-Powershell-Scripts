@@ -26,7 +26,7 @@ function Create-HotKeyLNK {
 
     .PARAMETER HotKey
 
-        HotKey to bind to. Defaults to ESC.
+        HotKey to bind to. Defaults to "CTRL+C".
     
     .PARAMETER PayloadURI
 
