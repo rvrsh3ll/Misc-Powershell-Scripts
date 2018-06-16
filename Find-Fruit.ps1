@@ -300,7 +300,7 @@ param (
                 $VulnLinks = $VulnLinks + "jmx-console/" # Jboss
                 $VulnLinks = $VulnLinks + "web-console/ServerInfo.jsp" # Jboss
                 $VulnLinks = $VulnLinks + "invoker/JMXInvokerServlet" # Jboss
-                $VulnLinks = $VulnLinks + "lc/system/console" # Adobe LiveCycle OSGi console
+                $VulnLinks = $VulnLinks + "system/console" # OSGi console
                 $VulnLinks = $VulnLinks + "axis2/axis2-admin/" # Apache Axis2
                 $VulnLinks = $VulnLinks + "manager/html/" # Tomcat
                 $VulnLinks = $VulnLinks + "tomcat/manager/html/" # Tomcat
