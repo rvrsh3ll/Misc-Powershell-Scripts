@@ -153,18 +153,11 @@ Use an SSL connection.
 
 The maximum concurrent threads to execute..
 
-.PARAMETER NoPing
-
-Disable Ping Check
-
-.PARAMETER FoundOnly
-
-Only display found URI's
 
 .EXAMPLE
 
-C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Port 8080 -Timeout 50
-C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Path dictionary.txt -Port 443 -Timeout 50
+C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Port 8080 
+C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Path dictionary.txt -Port 8443 -UseSSL
 
 
 .NOTES
@@ -181,37 +174,30 @@ param (
     [String]$Rhosts,
     [Int]$Port,
     [String]$Path,
-    [Int]$Timeout = "110",
+    [Int]$Timeout = 110,
     [Switch]$UseSSL,
     [ValidateRange(1, 100)]
-    [Int]$Threads,
-    [Switch]$NoPing,
-    [Switch]$FoundOnly
+    [Int]$Threads
 )
     
-    begin
-    {   
+    begin {   
         $hostList = New-Object System.Collections.ArrayList
         
         $iHosts = $Rhosts -split ","
         
-        foreach ($iHost in $iHosts)
-        {
+        foreach ($iHost in $iHosts) {
             $iHost = $iHost.Replace(" ", "")
             
-            if (!$iHost)
-            {
+            if (!$iHost) {
                 continue
             }
             
-            if ($iHost.contains("/"))
-            {
+            if ($iHost.contains("/")) {
                 $netPart = $iHost.split("/")[0]
                 [uint32]$maskPart = $iHost.split("/")[1]
                 
                 $address = [System.Net.IPAddress]::Parse($netPart)
-                if ($maskPart -ge $address.GetAddressBytes().Length * 8)
-                {
+                if ($maskPart -ge $address.GetAddressBytes().Length * 8) {
                     throw "Bad host mask"
                 }
                 
@@ -230,8 +216,7 @@ param (
                 
                 $Null = $hostList.Add($address.IPAddressToString)
                 
-                for ($i = 0; $i -lt $numhosts - 1; $i++)
-                {
+                for ($i = 0; $i -lt $numhosts - 1; $i++) {
                     $nextAddress = $address.GetAddressBytes()
                     [array]::Reverse($nextAddress)
                     $nextAddress = [System.BitConverter]::ToUInt32($nextAddress, 0)
@@ -239,63 +224,52 @@ param (
                     $nextAddress = [System.BitConverter]::GetBytes($nextAddress)[0..3]
                     [array]::Reverse($nextAddress)
                     $address = [System.Net.IPAddress][byte[]]$nextAddress
-                    $Null = $hostList.Add($address.IPAddressToString)
-                    
+                    $Null = $hostList.Add($address.IPAddressToString)       
                 }
                 
             }
-            else
-            {
+            else {
                 $Null = $hostList.Add($iHost) 
             }
         }
             
         $HostEnumBlock = {
-            param($ComputerName, $UseSSL, $Port, $Path, $Timeout, $FoundOnly)
+            param($ComputerName, $UseSSL, $Port, $Path, $Timeout)
             
-            if ($UseSSL -and $Port -eq 0)
-            {
+            if ($UseSSL -and $Port -eq 0) {
                 # Default to 443 if SSL is specified but no port is specified
                 $Port = 443
             }
-            elseif ($Port -eq 0)
-            {
+            elseif ($Port -eq 0) {
                 # Default to port 80 if no port is specified
                 $Port = 80
             }
             
             
-            if ($UseSSL)
-            {
+            if ($UseSSL) {
                 $SSL = 's'
                 # Ignore invalid SSL certificates
                 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
             }
-            else
-            {
+            else {
                 $SSL = ''
             }
             
-            if (($Port -eq 80) -or ($Port -eq 443))
-            {
+            if (($Port -eq 80) -or ($Port -eq 443)) {
                 $PortNum = ''
             }
-            else
-            {
+            else {
                 $PortNum = ":$Port"
             }
             
-            if ($Path)
-            {
+            if ($Path) {
                 if (!(Test-Path -Path $Path)) { Throw "File doesnt exist" }
                 $VulnLinks = @()
-                foreach ($Link in Get-Content $Path)
-                {
+                foreach ($Link in Get-Content $Path) {
                     $VulnLinks = $VulnLinks + $Link
                 }
             }
-            else
-            {
+            else {
                 $VulnLinks = @()
                 $VulnLinks = $VulnLinks + "jmx-console/" # Jboss
                 $VulnLinks = $VulnLinks + "web-console/ServerInfo.jsp" # Jboss
@@ -312,33 +286,26 @@ param (
                 $VulnLinks = $VulnLinks + "opennms/" # OpenNMS
             }
             
-            # Check Http status for each entry in the ditionary file
-            foreach ($Target in $ComputerName)
-            {
+            # Check Http status for each entry in the host
+            foreach ($Target in $ComputerName) {
                                 
                 
-                foreach ($Item in $Vulnlinks)
-                {
-                    
+                foreach ($Item in $Vulnlinks) {
                     $WebTarget = "http$($SSL)://$($Target)$($PortNum)/$($Item)"
                     $URI = New-Object Uri($WebTarget)
                     
-                    try
-                    {
+                    try {
                         $WebRequest = [System.Net.WebRequest]::Create($URI)
-                        $WebRequest.Headers.Add('UserAgent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko')
+                        $WebRequest.Headers.Add('UserAgent', $UserAgent)
                         $WebResponse = $WebRequest.Timeout = $Timeout
                         $WebResponse = $WebRequest.GetResponse()
                         $WebStatus = $WebResponse.StatusCode
                         $ResultObject += $ScanObject
                         $WebResponse.Close()
                     }
-                    catch
-                    {
-                        $WebStatus = $Error[0].Exception.InnerException.Response.StatusCode
-                        
-                        if ($WebStatus -eq $null)
-                        {
+                    catch {
+                        $WebStatus = $Error[0].Exception.InnerException.Response.StatusCode 
+                        if ($WebStatus -eq $null) {
                             # Not every exception returns a StatusCode.
                             # If that is the case, return the Status.
                             $WebStatus = $Error[0].Exception.InnerException.Status
@@ -350,25 +317,14 @@ param (
                         URL = $WebTarget
                     }
                     
-                    if ($FoundOnly) {
-                        New-Object -TypeName PSObject -Property $Result | Where-Object {$_.Status -eq 'OK'}
-                                          
-                    } else {
-                        New-Object -TypeName PSObject -Property $Result
-                    }
-                    
+                    New-Object -TypeName PSObject -Property $Result | Where-Object {$_.Status -eq 'OK'}
+                   
                 }
             }
         }
     }
 
     process {
-
-        if(-not $NoPing -and ($hostList.count -ne 1)) {
-            # ping all hosts in parallel
-            $Ping = {param($ComputerName) if(Test-Connection -ComputerName $ComputerName -Count 1 -Quiet -ErrorAction Stop){$ComputerName}}
-            $hostList = Invoke-ThreadedFunction -ComputerName $hostList -ScriptBlock $Ping -Threads 100
-        }
 
         if($Threads) {
             Write-Verbose "Using threading with threads = $Threads"
@@ -379,7 +335,7 @@ param (
                 'Port' = $Port
                 'Path' = $Path
                 'Timeout' = $Timeout
-                'FoundOnly' = $FoundOnly
+                'UserAgent' = $UserAgent
             }
 
             # kick off the threaded script block + arguments
@@ -387,9 +343,8 @@ param (
         }
 
         else {
-            Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $HostList, $UseSSL, $Port, $Path, $Timeout, $FoundOnly
+            Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $HostList, $UseSSL, $Port, $Path, $Timeout, $UserAgent 
         }
     }
 }
-
 
