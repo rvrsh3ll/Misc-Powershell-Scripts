@@ -112,7 +112,7 @@ function Get-BrowserData {
                 if ($_ -match $Search) {
                     New-Object -TypeName PSObject -Property @{
                         User = $UserName
-                        Browser = 'Firefox'
+                        Browser = 'Chrome'
                         DataType = 'Bookmark'
                         Data = $_
                     }
