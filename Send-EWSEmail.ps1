@@ -54,7 +54,7 @@ function Send-EWSEmail {
         if ($Attachment) {
             $email.Attachments.AddFileAttachment($Attachment) | Out-Null
         }
-        $eMail.SendAndSaveCopy()
+        $eMail.Send()
     }
 
     END {
