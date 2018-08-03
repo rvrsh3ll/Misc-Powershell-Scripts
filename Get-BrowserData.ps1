@@ -31,19 +31,19 @@ function Get-BrowserData {
 
     .EXAMPLE
 
-        PS C:\> Get-BrowserInformation
+        PS C:\> Get-BrowserData
 
         Enumerates browser information for all supported browsers for all current users.
 
     .EXAMPLE
 
-        PS C:\> Get-BrowserInformation -Browser IE -Datatype Bookmarks -UserName user1
+        PS C:\> Get-BrowserData -Browser IE -Datatype Bookmarks -UserName user1
 
         Enumerates bookmarks for Internet Explorer for the user 'user1'.
 
     .EXAMPLE
 
-        PS C:\> Get-BrowserInformation -Browser All -Datatype History -UserName user1 -Search 'github'
+        PS C:\> Get-BrowserData -Browser All -Datatype History -UserName user1 -Search 'github'
 
         Enumerates bookmarks for Internet Explorer for the user 'user1' and only returns
         results matching the search term 'github'.
