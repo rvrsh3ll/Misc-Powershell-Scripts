@@ -332,6 +332,7 @@ param (
                 $VulnLinks = $VulnLinks + "data/login" # Dell iDrac
                 $VulnLinks = $VulnLinks + "script/" # Jenkins Script Conosle
                 $VulnLinks = $VulnLinks + "opennms/" # OpenNMS
+                $VulnLinks = $VulnLinks + "RDWeb/Pages/en-US/Default.aspx" #RDS Remote Desktop
             }
             
             # Check Http status for each entry in the host
