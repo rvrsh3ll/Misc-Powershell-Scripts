@@ -487,6 +487,10 @@ param (
                         $WebResponse = $WebRequest.Timeout = $Timeout
                         $WebResponse = $WebRequest.GetResponse()
                         $WebStatus = $WebResponse.StatusCode
+                        $Stream = $WebResponse.GetResponseStream()
+                        $Reader = New-Object IO.StreamReader($Stream)
+                        $html = $reader.ReadToEnd()
+                        $WebSize = $html.Length
                         $ResultObject += $ScanObject
                         $WebResponse.Close()
                     }
@@ -505,6 +509,7 @@ param (
                     $Result = @{
                         Status = $WebStatus;
                         URL = $WebTarget
+                        Size = $WebSize
                     }
                     
                     if ($FoundOnly) {
