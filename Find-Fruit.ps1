@@ -2,14 +2,16 @@ function Invoke-ThreadedFunction
 {
     [CmdletBinding()]
     param (
-        [Parameter(Position = 0, Mandatory = $True)]
+        [Parameter(Position = 0, Mandatory = $false)]
         [String[]]$ComputerName,
+        [String[]]$VulnLinks,
         [Parameter(Position = 1, Mandatory = $True)]
         [System.Management.Automation.ScriptBlock]$ScriptBlock,
         [Parameter(Position = 2)]
         [Hashtable]$ScriptParameters,
         [Int]$Threads = 20,
-        [Int]$Timeout = 100
+        [Int]$Timeout = 100,
+        [Int]$Hostcount
     )
     
     begin
@@ -19,9 +21,16 @@ function Invoke-ThreadedFunction
         {
             $DebugPreference = 'Continue'
         }
-        
+        if ($ComputerName)
+        {
         Write-Verbose "[*] Total number of hosts: $($ComputerName.count)"
-        
+        }
+        elseif ($VulnLinks)
+        {
+        Write-Verbose "[*] Total number of URL's: $($VulnLinks.count*$Hostcount)"
+        }
+
+
         # Adapted from:
         #   http://powershell.org/wp/forums/topic/invpke-parallel-need-help-to-clone-the-current-runspace/
         $SessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
@@ -44,39 +53,78 @@ function Invoke-ThreadedFunction
     process
     {
         
-        ForEach ($Computer in $ComputerName)
+        if ($ComputerName)
         {
-            
-            # make sure we get a server name
-            if ($Computer -ne '')
+            ForEach ($Computer in $ComputerName)
             {
-                
-                While ($($Pool.GetAvailableRunspaces()) -le 0)
+            
+                # make sure we get a server name
+                if ($Computer -ne '')
                 {
-                    Start-Sleep -MilliSeconds $Timeout
-                }
                 
-                # create a "powershell pipeline runner"
-                $PS += [powershell]::create()
-                $PS[$Counter].runspacepool = $Pool
-                
-                # add the script block + arguments
-                $Null = $PS[$Counter].AddScript($ScriptBlock).AddParameter('ComputerName', $Computer)
-                if ($ScriptParameters)
-                {
-                    ForEach ($Param in $ScriptParameters.GetEnumerator())
+                    While ($($Pool.GetAvailableRunspaces()) -le 0)
                     {
-                        $Null = $PS[$Counter].AddParameter($Param.Name, $Param.Value)
+                        Start-Sleep -MilliSeconds $Timeout
                     }
+                
+                    # create a "powershell pipeline runner"
+                    $PS += [powershell]::create()
+                    $PS[$Counter].runspacepool = $Pool
+                
+                    # add the script block + arguments
+                    $Null = $PS[$Counter].AddScript($ScriptBlock).AddParameter('ComputerName', $Computer)
+                    if ($ScriptParameters)
+                    {
+                        ForEach ($Param in $ScriptParameters.GetEnumerator())
+                        {
+                            $Null = $PS[$Counter].AddParameter($Param.Name, $Param.Value)
+                        }
+                    }
+                
+                    # start job
+                    $Jobs += $PS[$Counter].BeginInvoke();
+                
+                    # store wait handles for WaitForAll call
+                    $Wait += $Jobs[$Counter].AsyncWaitHandle
                 }
-                
-                # start job
-                $Jobs += $PS[$Counter].BeginInvoke();
-                
-                # store wait handles for WaitForAll call
-                $Wait += $Jobs[$Counter].AsyncWaitHandle
+                $Counter = $Counter + 1
             }
-            $Counter = $Counter + 1
+        }
+        elseif ($VulnLinks)
+        {
+            ForEach ($testlink in $VulnLinks)
+            {
+                # make sure we get a server name
+                if ($testlink -ne '')
+                {
+                
+                    While ($($Pool.GetAvailableRunspaces()) -le 0)
+                    {
+                        Start-Sleep -MilliSeconds $Timeout
+                    }
+                
+                    # create a "powershell pipeline runner"
+                    $PS += [powershell]::create()
+                    $PS[$Counter].runspacepool = $Pool
+                
+                    # add the script block + arguments
+                    $Null = $PS[$Counter].AddScript($ScriptBlock).AddParameter('VulnLinks', $testlink)
+                    if ($ScriptParameters)
+                    {
+                        ForEach ($Param in $ScriptParameters.GetEnumerator())
+                        {
+                            $Null = $PS[$Counter].AddParameter($Param.Name, $Param.Value)
+                        }
+                    }
+                
+                    # start job
+                    $Jobs += $PS[$Counter].BeginInvoke();
+                
+                    # store wait handles for WaitForAll call
+                    $Wait += $Jobs[$Counter].AsyncWaitHandle
+                }
+                $Counter = $Counter + 1
+            }
         }
     }
     
@@ -348,3 +396,153 @@ param (
     }
 }
 
+
+
+function Brute-Fruit
+
+{
+
+<#
+.SYNOPSIS
+Search for web directories and files at scale across multiple web servers. Think "Dirbusting across a broad range of hosts".
+
+.DESCRIPTION
+A script to find directories and files across multiple web servers.
+
+.PARAMETER Dictionary
+Path to custom dictionary of files or directories. 
+Here's a good place to start: 
+https://github.com/danielmiessler/SecLists/tree/master/Discovery/Web-Content
+https://github.com/DanMcInerney/pentest-machine/blob/master/wordlists/dirs-files-6000.list
+
+.PARAMATER UrlList
+List of URL's to scan. These should be one per line in the format of "http://domain.com", "https://domain.com:8443", etc...
+
+.PARAMETER Timeout
+Timeout for each connection in milliseconds.
+
+.PARAMETER Threads
+The maximum concurrent threads to execute.
+
+.PARAMETER FoundOnly
+Only display found URI's
+
+
+.EXAMPLE
+C:\PS> Brute-Fruit -Dictionary C:\temp\dictionary-of-files-to-test.txt -UrlList C:\temp\list-of-hosts.txt -Timeout 3000
+
+C:\PS> Brute-Fruit -Dictionary C:\temp\dictionary-of-files-to-test.txt -UrlList C:\temp\list-of-hosts.txt -Timeout 3000 -Threads 10 -FoundOnly -Verbose
+
+.NOTES
+Credits to mattifestation for Get-HttpStatus
+HTTP Status Codes: 100 - Informational * 200 - Success * 300 - Redirection * 400 - Client Error * 500 - Server Error
+#>
+    
+[CmdletBinding()]
+
+param (
+    [Parameter(Mandatory = $false)]
+    [String]$Dictionary,
+    [Int]$Timeout = 110,
+    [ValidateRange(1, 100)]
+    [Int]$Threads,
+    [Switch]$FoundOnly,
+    [String]$UrlList
+)
+    
+    begin
+    {   
+    if (!(Test-Path -Path $UrlList)) { Throw "File doesn't exist" }
+        $hostlist = @()
+        $hostlist
+        foreach ($hostobject in Get-Content $UrlList)
+        {
+            $hostlist += $hostobject
+        }
+
+    if (!(Test-Path -Path $Dictionary)) { Throw "Dictionary file doesn't exist" }
+        $VulnLinks = @()
+        foreach ($Link in Get-Content $Dictionary)
+        {
+            $VulnLinks = $VulnLinks + $Link
+        }
+            
+
+        $HostEnumBlock = {
+            param($ComputerName, $Dictionary, $Timeout, $FoundOnly, $VulnLinks)
+      
+            foreach ($Item in $Vulnlinks)
+            {
+               
+                [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $True }
+                foreach ($Target in $ComputerName)
+                {
+
+                    $WebTarget = "$Target/$Item"
+                    $URI = New-Object Uri($WebTarget)
+                    
+                    try
+                    {
+                        $WebRequest = [System.Net.WebRequest]::Create($URI)
+                        $WebResponse = $WebRequest.Timeout = $Timeout
+                        $WebResponse = $WebRequest.GetResponse()
+                        $WebStatus = $WebResponse.StatusCode
+                        $ResultObject += $ScanObject
+                        $WebResponse.Close()
+                    }
+                    catch
+                    {
+                        $WebStatus = $Error[0].Exception.InnerException.Response.StatusCode
+                        
+                        if ($WebStatus -eq $null)
+                        {
+                            # Not every exception returns a StatusCode.
+                            # If that is the case, return the Status.
+                            $WebStatus = $Error[0].Exception.InnerException.Status
+                        }
+                    }
+
+                    $Result = @{
+                        Status = $WebStatus;
+                        URL = $WebTarget
+                    }
+                    
+                    if ($FoundOnly) {
+                        New-Object -TypeName PSObject -Property $Result | Where-Object {$_.Status -eq 'OK'}
+                                          
+                    } else {
+                        New-Object -TypeName PSObject -Property $Result
+                    }
+                    
+                }
+            }
+        }
+    }
+
+    process {
+
+        if($Threads) {
+            Write-Verbose "Using threading with threads = $Threads"
+
+            # if we're using threading, kick off the script block with Invoke-ThreadedFunction
+            $ScriptParams = @{
+                'UseSSL' = $UseSSL
+                'Port' = $Port
+                'Dictionary' = $Dictionary
+                'Timeout' = $Timeout
+                'FoundOnly' = $FoundOnly
+                'ComputerName' = $hostlist
+                
+                
+            }
+
+            # kick off the threaded script block + arguments           
+            $Hostcount = $hostlist.count
+            Invoke-ThreadedFunction -VulnLinks $VulnLinks -HostCount $Hostcount -ScriptBlock $HostEnumBlock -ScriptParameters $ScriptParams
+        }
+
+        else {
+            Invoke-Command -ScriptBlock $HostEnumBlock -ArgumentList $HostList, $Dictionary, $Timeout, $FoundOnly, $VulnLinks
+        }
+    }
+}
