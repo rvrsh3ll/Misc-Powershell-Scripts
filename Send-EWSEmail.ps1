@@ -43,7 +43,7 @@ function Send-EWSEmail {
     }
     
     PROCESS {
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        [Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
         Write-Output "Sending...."
         $EXCHService.Credentials = New-Object -TypeName Microsoft.Exchange.WebServices.Data.WebCredentials -ArgumentList $Credential.UserName, $Credential.GetNetworkCredential().Password
         $EXCHService.AutodiscoverUrl($Credential.UserName, {$true})
