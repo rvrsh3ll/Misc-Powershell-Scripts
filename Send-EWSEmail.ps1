@@ -51,18 +51,18 @@ function Send-EWSEmail {
         $Params.IncludeDebugInformation=$False
         $Params.ReferencedAssemblies.Add("System.DLL") | Out-Null
         $TASource=@'
-        namespace Local.ToolkitExtensions.Net.CertificatePolicy{
-            public class TrustAll : System.Net.ICertificatePolicy {
-            public TrustAll() { 
-            }
-            public bool CheckValidationResult(System.Net.ServicePoint sp,
-                System.Security.Cryptography.X509Certificates.X509Certificate cert, 
-                System.Net.WebRequest req, int problem) {
-                return true;
-            }
-            }
-        }
-        '@ 
+namespace Local.ToolkitExtensions.Net.CertificatePolicy{
+public class TrustAll : System.Net.ICertificatePolicy {
+public TrustAll() { 
+}
+public bool CheckValidationResult(System.Net.ServicePoint sp,
+System.Security.Cryptography.X509Certificates.X509Certificate cert, 
+System.Net.WebRequest req, int problem) {
+return true;
+}
+}
+}
+'@ 
         $TAResults=$Provider.CompileAssemblyFromSource($Params,$TASource)
         $TAAssembly=$TAResults.CompiledAssembly
         
