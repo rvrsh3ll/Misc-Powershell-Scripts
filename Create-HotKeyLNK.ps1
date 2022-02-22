@@ -80,12 +80,11 @@ function Create-HotKeyLNK {
     
     $obj = New-Object -ComObject WScript.Shell
     $link = $obj.CreateShortcut((Get-Location).Path + "\" + $LNKName + ".lnk")
-    Write-Host $link
     $link.WindowStyle = '7'
     $link.TargetPath = $EXEPath
     $link.HotKey = $HotKey
     $link.IconLocation = $IconPath
     $link.Arguments = $arguments
     $link.Save()
-    Write-Host "Done"
+    Write-Host "Done!"
 }
