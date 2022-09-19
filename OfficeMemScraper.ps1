@@ -149,6 +149,7 @@ Param (
     END {}
 }
 function Invoke-OfficeScrape {
+ # Inspired by https://twitter.com/mrd0x/status/1571533895744606211
     [CmdletBinding()]
     Param (
         [Parameter(Position = 0, Mandatory = $True, ValueFromPipeline = $True)]
