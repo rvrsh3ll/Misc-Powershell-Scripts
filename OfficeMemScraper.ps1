@@ -176,7 +176,7 @@ function Invoke-OfficeScrape {
             foreach ($d in $dumps) {
                 Write-Output "Scraping memory dump: $($d.FullName)"
                 $output = select-string -Path $d.FullName -Pattern eyJ0eX   
-                $output | out-file -encoding ascii $outfile
+                $output | out-file -append -encoding ascii $outfile
             }
         }
         else {
