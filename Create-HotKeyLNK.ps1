@@ -22,7 +22,7 @@ function Create-HotKeyLNK {
 
     .PARAMETER IconPath
 
-        Path to an exe for an icon. Defaults to Internet Explorer.
+        Path to an exe for an icon. Defaults to Internet Explorer. Use "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe,13" for PDF extension.
 
     .PARAMETER HotKey
 
@@ -61,6 +61,10 @@ function Create-HotKeyLNK {
         $IconPath = "$env:programfiles\Internet Explorer\iexplore.exe",
 
         [Parameter(Mandatory=$False)]
+        [Switch]
+        $PDFIcon,
+
+        [Parameter(Mandatory=$False)]
         [String]
         $HotKey = "CTRL+V",
 
@@ -83,7 +87,11 @@ function Create-HotKeyLNK {
     $link.WindowStyle = '7'
     $link.TargetPath = $EXEPath
     $link.HotKey = $HotKey
-    $link.IconLocation = $IconPath
+    if ($PDFIcon) {
+        $link.IconLocation = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe,13"
+    } else {
+        $link.IconLocation = $IconPath
+    }
     $link.Arguments = $arguments
     $link.Save()
     Write-Host "Done!"
