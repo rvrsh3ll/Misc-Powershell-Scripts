@@ -201,11 +201,20 @@ Use an SSL connection.
 
 The maximum concurrent threads to execute..
 
+.PARAMETER WebProxy
+
+Specify an http proxy
+
+.PARAMETER ProxyPort
+
+Specify the http proxy port
+
 
 .EXAMPLE
 
 C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Port 8080 
 C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Path dictionary.txt -Port 8443 -UseSSL
+C:\PS> Find-Fruit -Rhosts 192.168.1.0/24 -Port 8080 -WebProxy 127.0.0.1 -ProxyPort 8080
 
 
 .NOTES
