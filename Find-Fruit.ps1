@@ -220,12 +220,21 @@ HTTP Status Codes: 100 - Informational * 200 - Success * 300 - Redirection * 400
 param (
     [Parameter(Mandatory = $True)]
     [String]$Rhosts,
+    [Parameter(Mandatory=$False)]
     [Int]$Port,
+    [Parameter(Mandatory=$False)]
     [String]$Path,
+    [Parameter(Mandatory=$False)]
     [Int]$Timeout = 110,
+    [Parameter(Mandatory=$False)]
     [Switch]$UseSSL,
+    [Parameter(Mandatory=$False)]
     [ValidateRange(1, 100)]
-    [Int]$Threads
+    [Int]$Threads,
+    [Parameter(Mandatory=$False)]
+    [String]$WebProxy,
+    [Parameter(Mandatory=$False)]
+    [String]$ProxyPort
 )
     
     begin {   
@@ -347,6 +356,8 @@ param (
                     try {
                         $WebRequest = [System.Net.WebRequest]::Create($URI)
                         $WebRequest.Headers.Add('UserAgent', $UserAgent)
+                        $ProxyAddress = New-Object System.Net.WebProxy("http://$($WebProxy):$($ProxyPort)",$true)
+                        $WebRequest.Proxy = $ProxyAddress    
                         $WebResponse = $WebRequest.Timeout = $Timeout
                         $WebResponse = $WebRequest.GetResponse()
                         $WebStatus = $WebResponse.StatusCode
@@ -386,6 +397,8 @@ param (
                 'Path' = $Path
                 'Timeout' = $Timeout
                 'UserAgent' = $UserAgent
+                'WebProxy' = $WebProxy
+                'ProxyPort' = $ProxyPort
             }
 
             # kick off the threaded script block + arguments
@@ -445,10 +458,14 @@ HTTP Status Codes: 100 - Informational * 200 - Success * 300 - Redirection * 400
 param (
     [Parameter(Mandatory = $false)]
     [String]$Dictionary,
+    [Parameter(Mandatory=$False)]
     [Int]$Timeout = 110,
+    [Parameter(Mandatory=$False)]
     [ValidateRange(1, 100)]
     [Int]$Threads,
+    [Parameter(Mandatory=$False)]
     [Switch]$FoundOnly,
+    [Parameter(Mandatory=$False)]
     [String]$UrlList
 )
     
@@ -486,6 +503,8 @@ param (
                     try
                     {
                         $WebRequest = [System.Net.WebRequest]::Create($URI)
+                        $ProxyAddress = New-Object System.Net.WebProxy("http://$($WebProxy):$($ProxyPort)",$true)
+                        $WebRequest.Proxy = $ProxyAddress    
                         $WebResponse = $WebRequest.Timeout = $Timeout
                         $WebResponse = $WebRequest.GetResponse()
                         $WebStatus = $WebResponse.StatusCode
@@ -539,6 +558,8 @@ param (
                 'Timeout' = $Timeout
                 'FoundOnly' = $FoundOnly
                 'ComputerName' = $hostlist
+                'WebProxy' = $WebProxy
+                'ProxyPort' = $ProxyPort
                 
                 
             }
