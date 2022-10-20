@@ -24,6 +24,10 @@ function Create-HotKeyLNK {
 
         Path to an exe for an icon. Defaults to Internet Explorer. Use "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe,13" for PDF extension.
 
+    .PARAMETER PDFIcon
+
+        Switch to create an icon with a PDF logo
+        
     .PARAMETER HotKey
 
         HotKey to bind to. Defaults to "CTRL+V".
